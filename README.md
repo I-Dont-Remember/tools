@@ -6,3 +6,5 @@ served at `/that-folder-name/`.
 
 Run `npm run build` to build everything into `_site/`. See `AGENTS.md` for the
 build convention and how to add a new tool.
+
+Every push builds a Cloudflare Pages preview deployment for that branch.
