@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Barebones Bingo Card Generator</title>
+  <style>
+    :root {
+      --page-pad: 10mm;
+      --border: 1px solid #000;
+      --font: 12pt;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: #fff;
+      color: #000;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .controls {
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .title {
+      font-size: 16px;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .meta {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: #333;
+    }
+
+    .meta label {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      user-select: none;
+    }
+
+    textarea {
+      width: min(900px, calc(100vw - 20px));
+      height: 220px;
+      font-size: 14px;
+      line-height: 1.25;
+      padding: 8px;
+      border: 1px solid #bbb;
+      border-radius: 6px;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    button {
+      appearance: none;
+      border: 1px solid #111;
+      background: #fff;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    button:active { transform: translateY(1px); }
+
+    .hint { font-size: 12px; color: #333; }
+
+    .sheet {
+      padding: var(--page-pad);
+      box-sizing: border-box;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* Card sized to fit on one printed page (Letter by default) */
+    .card {
+      width: min(190mm, calc(100vw - (2 * var(--page-pad))));
+      aspect-ratio: 1 / 1;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      grid-template-rows: repeat(5, 1fr);
+      gap: 0;
+      border: var(--border);
+    }
+
+    .cell {
+      /* Draw single gridlines (no double-thick overlaps) */
+      border: 0;
+      border-right: var(--border);
+      border-bottom: var(--border);
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 4mm;
+      font-size: var(--font);
+      line-height: 1.1;
+      word-break: break-word;
+      overflow: hidden;
+    }
+
+    /* Remove extra borders on the outer edge (card already has a border) */
+    .cell:nth-child(5n) { border-right: 0; }
+    .cell:nth-child(n+21) { border-bottom: 0; }
+
+    /* Print: hide controls; fill the page */
+    @page { margin: 6mm; }
+
+    @media print {
+      .controls { display: none !important; }
+      body { background: #fff; }
+      .sheet {
+        padding: 0;
+        height: 100vh;
+        align-items: center;
+      }
+      .card {
+        /* Use as much of the printable area as possible (square constrained by smaller side) */
+        width: min(100%, 100vmin);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <h1 class="title">Barebones Bingo Card Generator</h1>
+    <p>For some reason it was difficult to find a bingo card generator that would give me an ink-saver/bare-bones just the grid and not force me to make an account. Maybe i didn't look hard enough, but this ended up being quite fast (thanks ChatGPT!).</p>
+
+    <div class="meta">
+      <span>Lines: <strong id="lineCount">0</strong>/<span id="neededCount">25</span></span>
+      <label>
+        <input type="checkbox" id="freeSpace" />
+        <strong>Free space</strong>
+      </label>
+    <p id="fitHint">Tip: You can have a pretty long entry - but it starts to disappear if you go this long --> "<code>a-fdfdsfsdfdfdfdafdf dsfsdfdfdfdafdfdsfsdfdfddffdfddfdfdfdff ffdf8888888888888888888dv</code>"</span>
+    </div>
+
+    <textarea id="entries" spellcheck="false" placeholder="Paste 25 lines here (one per line)"></textarea>
+
+    <div class="actions">
+      <button id="render">Render</button>
+      <button id="rerand" disabled>Re-randomize</button>
+      <button id="pdf" disabled>Print / Save as PDF</button>
+      <span class="hint" id="status"></span>
+    </div>
+  </div>
+
+  <div class="sheet">
+    <div class="card" id="card" aria-label="Bingo card"></div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const cardEl = $("card");
+    const entriesEl = $("entries");
+    const statusEl = $("status");
+    const renderBtn = $("render");
+    const rerandBtn = $("rerand");
+    const pdfBtn = $("pdf");
+    const freeSpaceEl = $("freeSpace");
+    const lineCountEl = $("lineCount");
+    const neededCountEl = $("neededCount");
+
+    const CENTER_INDEX = 12; // 0-based in a 25-cell array
+
+    function neededLines() {
+      return freeSpaceEl.checked ? 24 : 25;
+    }
+
+    function updateNeededUI() {
+      const n = neededLines();
+      neededCountEl.textContent = String(n);
+      entriesEl.placeholder = `Paste ${n} lines here (one per line)`;
+    }
+
+    function cleanLines(text) {
+      // Keep blank lines out; trim each line; preserve order.
+      // NOTE: use a proper newline regex; malformed regex here will cause a SyntaxError.
+      return text
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter((l) => l.length > 0);
+    }
+
+    function shuffle(arr) {
+      // Fisher-Yates
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function setStatus(msg) {
+      statusEl.textContent = msg;
+    }
+
+    function renderCard(cells) {
+      cardEl.innerHTML = "";
+      for (let i = 0; i < 25; i++) {
+        const div = document.createElement("div");
+        div.className = "cell";
+        div.textContent = cells[i] ?? "";
+        cardEl.appendChild(div);
+      }
+    }
+
+    function buildCellsFromLines(lines) {
+      const useFree = freeSpaceEl.checked;
+      if (!useFree) return lines.slice(0, 25);
+
+      // Insert FREE into the center.
+      const cells = [];
+      let li = 0;
+      for (let i = 0; i < 25; i++) {
+        if (i === CENTER_INDEX) {
+          cells.push("FREE");
+        } else {
+          cells.push(lines[li++] ?? "");
+        }
+      }
+      return cells;
+    }
+
+    function validate(lines) {
+      const n = neededLines();
+      if (lines.length !== n) {
+        setStatus(`Need exactly ${n} non-empty lines (currently ${lines.length}).`);
+        return false;
+      }
+      setStatus("");
+      return true;
+    }
+
+    function updateLineCounter() {
+      const lines = cleanLines(entriesEl.value);
+      lineCountEl.textContent = String(lines.length);
+
+      // If the user changes the free-space toggle or content, disable actions until re-render.
+      rerandBtn.disabled = true;
+      pdfBtn.disabled = true;
+      if (lines.length === neededLines()) setStatus("");
+    }
+
+    function doRenderRandom() {
+      const lines = cleanLines(entriesEl.value);
+      if (!validate(lines)) {
+        rerandBtn.disabled = true;
+        pdfBtn.disabled = true;
+        return;
+      }
+
+      const randomized = shuffle(lines);
+      const cells = buildCellsFromLines(randomized);
+      renderCard(cells);
+
+      rerandBtn.disabled = false;
+      pdfBtn.disabled = false;
+    }
+
+    // Events
+    renderBtn.addEventListener("click", doRenderRandom);
+    rerandBtn.addEventListener("click", doRenderRandom);
+    pdfBtn.addEventListener("click", () => window.print());
+
+    entriesEl.addEventListener("input", updateLineCounter);
+    freeSpaceEl.addEventListener("change", () => {
+      updateNeededUI();
+      updateLineCounter();
+      // Clear the current card when mode changes to avoid confusion.
+      renderCard(Array(25).fill(""));
+      setStatus("");
+    });
+
+    // --- Lightweight self-tests (console only) ---
+    // These help catch accidental regex breakage in cleanLines.
+    function assert(name, cond) {
+      if (!cond) throw new Error(`Test failed: ${name}`);
+      console.debug(`✓ ${name}`);
+    }
+
+    (function runTests() {
+      const a = cleanLines("a\n\n b \n");
+      assert("cleanLines removes blanks + trims", a.length === 2 && a[0] === "a" && a[1] === "b");
+
+      const b = cleanLines("x\r\ny\r\n");
+      assert("cleanLines handles CRLF", b.length === 2 && b[0] === "x" && b[1] === "y");
+
+      // Free space insertion shape
+      freeSpaceEl.checked = true;
+      const c = buildCellsFromLines(Array.from({ length: 24 }, (_, i) => `L${i+1}`));
+      assert("FREE inserted at center", c.length === 25 && c[CENTER_INDEX] === "FREE");
+      freeSpaceEl.checked = false;
+    })();
+
+    // Init
+    updateNeededUI();
+    updateLineCounter();
+    renderCard(Array(25).fill(""));
+  </script>
+</body>
+</html>

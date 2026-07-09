@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="description" content="local bus tracker">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-touch-fullscreen" content="yes">
+  <meta name="format-detection" content="telephone=no">
+  <title>Bus Tracking 2650</title>
+</head>
+<body
+    style="margin: 0px;"
+>
+    <script>
+    console.log('hello')
+    // Use the script to generate the URL, then just paste it into our iframe
+    /*
+    // I forgot! this ipad uses such old safari, we probably can't use modern JS in any way
+    console.log('what happening')
+    var baseUrl = 'https://www.transitchicago.com/diydisplay/';
+    function compiledUrl() {
+    // map of slide label to list of stop numbers. up to 8
+    var slides = {
+      "S Stockton & Wrightwood": [1078],
+      "Clark & Deming": [1836,1913], // S, N
+      "W Diversey & Sheridan": [1148,11037], // both 76 & 77 one slide
+      "Clark & Drummond": [1915,1834], // N, S
+      "S Halsted & Wrightwood": [5768],
+
+    }
+    if (Object.keys(slides).length > 8) {
+      throw Error('Too many slides for CTA to handle')
+    }
+    var params = new URLSearchParams();
+    var index = 1;
+    object.keys(slides).forEach()
+    for (var [key, value] of Object.entries(slides)) {
+      params.append(`n${index}`, key);
+      params.append(`s${index}`, value.join(','));
+      index++;
+    }
+    // add the extra params
+    params.append('w', 0)
+    params.append('size', 'small')
+    return`${baseUrl}?${params.toString()}`;
+  }
+  const fullUrl = compiledUrl();
+  console.log(`fullUrl ${fullUrl}`)
+  let iframe = document.getElementById('bustracking-cta-iframe');
+  console.log('found iframe', iframe.id)
+  iframe.src = fullUrl;
+  */
+    console.log('done')
+    </script>
+    <iframe
+     name="bus-tracker"
+     id="bustracking-cta-iframe"
+     title="Chicago Transit bus tracker"
+     width="100%"
+     allow="fullscreen"
+     style="position: absolute; height: 100%; border: none"
+    src="https://www.transitchicago.com/diydisplay/?n1=S+Stockton+%26+Wrightwood&s1=1078&n2=Clark+%26+Deming&s2=1836%2C1913&n3=W+Diversey+%26+Sheridan&s3=1148%2C11037&n4=Clark+%26+Drummond&s4=1915%2C1834&n5=S+Halsted+%26+Wrightwood&s5=5768&w=0&size=small"
+     >
+  </iframe>
+</body>
+</html>
+

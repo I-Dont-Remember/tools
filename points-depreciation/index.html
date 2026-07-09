@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .input-container {
+            margin-bottom: 2rem;
+            max-width: 300px;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 2rem;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        .results {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+        .chart {
+            margin-top: 2rem;
+        }
+        .explanation {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f0f9ff;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>Points Strategy Calculator</h1>
+    
+    <div class="input-container">
+        <label for="years">Time Horizon (Years):</label>
+        <input type="number" id="years" value="5" step="1" min="1" max="10">
+    </div>
+    
+    <button onclick="calculate()">Calculate</button>
+    
+    <div class="results" id="results"></div>
+
+    <div class="explanation">
+        <strong>How to read this chart:</strong>
+        <p>- The lines show the minimum CPP needed to beat "cash + interest" at different rates</p>
+        <p>- The red dashed line shows the CSP Travel Portal value (1.25 CPP)</p>
+        <p>- If you can redeem above a line, you're beating that investment scenario</p>
+        <p>- The steeper the line, the more urgently you should consider cashing out if you can't find good redemptions</p>
+    </div>
+    
+    <div class="chart">
+        <canvas id="comparisonChart"></canvas>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script>
+        let chart;
+
+        function calculateCPPOverTime(interestRate, months) {
+            const data = [];
+            let currentValue = 1; // Starting with 1 CPP
+            
+            for (let month = 0; month <= months; month++) {
+                data.push(currentValue);
+                currentValue *= (1 + (interestRate / 12));
+            }
+            
+            return data;
+        }
+
+        function calculate() {
+            const years = parseInt(document.getElementById('years').value);
+            const months = years * 12;
+            
+            // Calculate for different rates
+            const rates = [0.015, 0.03, 0.05, 0.08];
+            const scenarios = rates.map(rate => calculateCPPOverTime(rate, months));
+            
+            // Display results
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <h3>Analysis:</h3>
+                <p>After ${years} years, you need at least:</p>
+                <p>• ${scenarios[0][months].toFixed(3)} CPP (1.5% APY scenario)</p>
+                <p>• ${scenarios[1][months].toFixed(3)} CPP (3% APY scenario)</p>
+                <p>• ${scenarios[2][months].toFixed(3)} CPP (5% APY scenario)</p>
+                <p>• ${scenarios[3][months].toFixed(3)} CPP (Historical S&P scenario)</p>
+                <p>to beat investing the cash</p>
+            `;
+            
+            // Update chart
+            updateChart(scenarios, months);
+        }
+        
+        function updateChart(scenarios, months) {
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            
+            if (chart) {
+                chart.destroy();
+            }
+            
+            const labels = Array.from({length: months + 1}, (_, i) => (i / 12).toFixed(2));
+            
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '1.5% APY',
+                            data: scenarios[0],
+                            borderColor: '#93c5fd',
+                            fill: false,
+                            pointRadius: 0,
+                            borderWidth: 2
+                        },
+                        {
+                            label: '3% APY',
+                            data: scenarios[1],
+                            borderColor: '#2563eb',
+                            fill: false,
+                            pointRadius: 0,
+                            borderWidth: 2
+                        },
+                        {
+                            label: '5% APY',
+                            data: scenarios[2],
+                            borderColor: '#1e40af',
+                            fill: false,
+                            pointRadius: 0,
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Historical S&P (8%)',
+                            data: scenarios[3],
+                            borderColor: '#312e81',
+                            fill: false,
+                            pointRadius: 0,
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'CSP Travel Portal',
+                            data: Array(months + 1).fill(1.25),
+                            borderColor: '#dc2626',
+                            borderDash: [5, 5],
+                            fill: false,
+                            pointRadius: 0,
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Required CPP Over Time'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Years'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'CPP Value'
+                            },
+                            suggestedMin: 0.9
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initial calculation
+        calculate();
+    </script>
+</body>
+</html>
