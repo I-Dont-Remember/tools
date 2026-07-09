@@ -39,6 +39,9 @@ A landing page listing all built tools is generated automatically at `_site/inde
   asset URLs resolve correctly once deployed under that subpath.
 
 **Cloudflare Pages project settings** (Git-connected build): Build command `npm run build`,
-Build output directory `_site`, root directory `/`.
+root directory `/`. The output directory (`_site`) is set in `wrangler.toml` via
+`pages_build_output_dir`, which takes precedence over the dashboard setting for that field —
+build command and root directory still have to be set in the dashboard, since Cloudflare
+Pages has no repo-based config for those two.
 
 
