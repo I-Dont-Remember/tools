@@ -1,3 +1,10 @@
 [tools]
 node = "25"
 python = "3.12"
+
+
+[tasks.build]
+run = "npm run build"
+
+[tasks.serve]
+run = "cd _site/ && python -m http.server 8000"

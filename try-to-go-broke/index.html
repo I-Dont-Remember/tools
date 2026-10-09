@@ -1,0 +1,388 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Try To Go Broke</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Schibsted+Grotesk:wght@400;500;700&display=swap">
+<style>
+/* Layout: a control panel of your numbers on the left, the evidence on the right (verdict, chart, sabotage table). Stacks on phones. */
+:root{
+  --bg:#eef3f1; --panel:#f8fbfa; --ink:#12302b; --muted:#557069; --line:#cfdcd8;
+  --accent:#0b6e62; --accent-soft:#d5ebe6; --alt:#7a4fa3; --flat:#6b7f7a;
+  --good:#1c7a4a; --good-bg:#dcefe3; --warn:#9a5a00; --warn-bg:#f6e7cc; --bad:#a8322a; --bad-bg:#f5dcd9;
+  --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --body:"Schibsted Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f1b19; --panel:#162522; --ink:#e3efec; --muted:#93aba5; --line:#2a3f3a;
+  --accent:#4fc7b6; --accent-soft:#17383380; --alt:#c19be6; --flat:#8ea19c;
+  --good:#6fd39a; --good-bg:#16382a; --warn:#f0b450; --warn-bg:#3a2c12; --bad:#f08a80; --bad-bg:#40201d; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f1b19; --panel:#162522; --ink:#e3efec; --muted:#93aba5; --line:#2a3f3a;
+  --accent:#4fc7b6; --accent-soft:#17383380; --alt:#c19be6; --flat:#8ea19c;
+  --good:#6fd39a; --good-bg:#16382a; --warn:#f0b450; --warn-bg:#3a2c12; --bad:#f08a80; --bad-bg:#40201d; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;padding-inline:20px;padding-block:28px 56px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+header{display:flex;flex-direction:column;gap:8px;max-width:62ch}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(2rem,5vw,3.1rem);line-height:1.02;margin:0;letter-spacing:-.02em;text-wrap:balance}
+h2{font-family:var(--display);font-weight:700;font-size:1.35rem;line-height:1.15;margin:0;text-wrap:balance}
+p{margin:0}
+.lede{color:var(--muted);font-size:1.05rem}
+.grid{display:grid;grid-template-columns:340px minmax(0,1fr);gap:28px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.controls{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:16px}
+@media (min-width:861px){.controls{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);max-height:calc(100vh - 24px);overflow:auto}}
+.group{display:flex;flex-direction:column;gap:12px}
+.group + .group{border-top:1px solid var(--line);padding-top:14px}
+.eyebrow{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.field{display:flex;flex-direction:column;gap:4px}
+.field .top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.field label{font-size:.9rem;font-weight:500;min-width:0}
+.field input[type=number]{width:118px;flex:none;font:inherit;font-variant-numeric:tabular-nums;text-align:right;padding:5px 8px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink)}
+.field input[type=range]{width:100%;accent-color:var(--accent);margin:0}
+.field small{color:var(--muted);font-size:.78rem;line-height:1.35}
+input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button{font:inherit;font-weight:500;color:var(--accent);background:transparent;border:1px solid var(--accent);border-radius:8px;padding:7px 12px;cursor:pointer}
+button:hover{background:var(--accent-soft)}
+.results{display:flex;flex-direction:column;gap:32px;min-width:0}
+.verdict{border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:14px;background:var(--good-bg)}
+.verdict.warn{background:var(--warn-bg)} .verdict.bad{background:var(--bad-bg)}
+.verdict .big{font-family:var(--display);font-weight:700;font-size:clamp(1.5rem,3.6vw,2.2rem);line-height:1.1;text-wrap:balance}
+.stats{display:flex;flex-wrap:wrap;gap:10px 32px}
+.stat{display:flex;flex-direction:column}
+.stat b{font-family:var(--display);font-size:1.4rem;font-variant-numeric:tabular-nums}
+.stat span{font-size:.82rem;color:var(--muted)}
+section{display:flex;flex-direction:column;gap:12px;min-width:0}
+.sub{color:var(--muted);max-width:68ch}
+.chartbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 10px 10px}
+svg{display:block;width:100%;height:auto;touch-action:pan-y}
+.readout{font-size:.85rem;font-variant-numeric:tabular-nums;color:var(--muted);min-height:1.5em;padding-inline:8px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:.85rem;padding:6px 8px 0}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend svg{width:30px;height:8px;flex:none}
+.levers{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:0;border-top:2px solid var(--ink)}
+.lever{padding:14px 16px 16px 0;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:4px}
+.lever .num{font-family:var(--display);font-weight:700;font-size:1.7rem;line-height:1.1;color:var(--accent);font-variant-numeric:tabular-nums}
+.lever .what{font-weight:700;font-size:.82rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.lever p{font-size:.93rem}
+#over .lever .num{color:var(--warn)}
+.gauge{display:flex;flex-direction:column;gap:6px}
+.track{height:14px;border-radius:7px;background:var(--line);overflow:hidden}
+.fillbar{height:100%;background:var(--warn);border-radius:7px}
+.gauge b{font-variant-numeric:tabular-nums}
+ul.plain{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:6px;max-width:68ch}
+.fine{font-size:.85rem;color:var(--muted);max-width:72ch}
+a{color:var(--accent)}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Try to go broke</h1>
+    <p class="lede">Put in your numbers, then push them as hard as you like. The page shows where your savings end up and how extreme things have to get before the money runs out. Everything is in today's dollars, so inflation is already taken out.</p>
+  </header>
+
+  <div class="grid">
+    <form class="controls" id="controls" onsubmit="return false">
+      <div id="fields"></div>
+      <div class="group">
+        <button type="button" id="reset">Reset to the example</button>
+        <small class="fine">It opens with an example from the article: Alina, age 50, $2M saved, spending $50k a year. Your numbers are saved only in this browser.</small>
+      </div>
+    </form>
+
+    <div class="results">
+      <div class="verdict" id="verdict">
+        <div class="big" id="big"></div>
+        <div class="stats" id="stats"></div>
+        <p id="vnote"></p>
+      </div>
+
+      <section id="over">
+        <h2>The other way to fail: leaving it unspent</h2>
+        <p class="sub" id="overSub"></p>
+        <div class="gauge" id="gauge"></div>
+        <div class="levers" id="overBoxes"></div>
+      </section>
+
+      <section>
+        <h2>Your savings, year by year</h2>
+        <p class="sub">Three futures with the same spending and income, plus the spend-it-all path that lands on $0. The dashed line assumes investments never beat inflation again for the rest of your life.</p>
+        <div class="chartbox">
+          <div class="readout" id="readout">Move across the chart to read each year.</div>
+          <svg id="chart" viewBox="0 0 720 360" role="img" aria-label="Projected savings by age under three growth rates"></svg>
+          <div class="legend" id="legend"></div>
+        </div>
+      </section>
+
+      <section>
+        <h2 id="leverTitle"></h2>
+        <p class="sub">Each box changes one thing and leaves the rest of your numbers alone. It is the smallest push that empties the account by the end of your plan.</p>
+        <div class="levers" id="levers"></div>
+      </section>
+
+      <section>
+        <h2>What this model refuses to let you do</h2>
+        <p class="sub">The projection assumes you watch the balance fall for decades and never react. In real life you would have every one of these available, and none is counted above.</p>
+        <ul class="plain">
+          <li>Spend a little less in a bad year. The model spends the full amount every year, even in a crash.</li>
+          <li>Earn anything at all beyond the income you entered: part-time work, a rented room, a side project.</li>
+          <li>Use the value of your home by downsizing, renting part of it, or borrowing against it.</li>
+          <li>Receive an inheritance, share costs with a partner, or move somewhere cheaper.</li>
+          <li>Notice. A falling balance takes years to become a problem, and you would see it coming a long way off.</li>
+        </ul>
+        <p class="fine">Landing on exactly $0 leaves no margin for a bad market, so treat the spend-it-all figure as a ceiling that shows the size of the gap, and keep some buffer below it. A down payment and costlier stretches of life go in as rough figures under Big costs. A rough number is fine here: the point is to see how much room there is, and a few thousand dollars either way will not change the answer. For a one-time hit, use the crash slider. Tax is one flat rate on withdrawals, which is a rough stand-in for the real rules. Returns are applied smoothly each year, so use the crash slider to test a bad start. This is a simple calculator for building intuition and is not financial advice. Based on the article <a href="https://mrmoneymustache.com/2022/07/18/never-run-out-of-money/">Why You'll Probably Never Run Out Of Money</a>.</p>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---------- model (pure) ----------
+function sim(p){
+  var n=Math.max(1,p.endAge-p.age), b=p.savings*(1-p.crash/100), out=[b], dead=null, low=b;
+  for(var i=0;i<n;i++){
+    var a=p.age+i, inc=(a<p.workUntil?p.work:0)+(a>=p.ssAge?p.ss:0);
+    var net=inc-p.spend-(a>=p.xFrom&&a<p.xTo?(p.extra||0):0)-(a===p.lumpAge?(p.lump||0):0); if(net<0) net=net/(1-Math.min(p.tax||0,90)/100);
+    b=b*(1+p.ret/100)+net;
+    if(b<0&&dead===null) dead=a+1;
+    if(dead!==null) b=0;
+    if(b<low) low=b;
+    out.push(b);
+  }
+  return {bal:out,dead:dead,end:b,low:low};
+}
+function withP(p,k,v){var q={};for(var x in p)q[x]=p[x];q[k]=v;return q}
+// largest value of key k in [lo,hi] for which ok(sim) holds, assuming ok at lo
+function bisect(p,k,lo,hi,ok){
+  for(var i=0;i<60;i++){var m=(lo+hi)/2; if(ok(sim(withP(p,k,m))))lo=m; else hi=m}
+  return lo;
+}
+// return lever needs a descending search; done separately for clarity
+function minReturn(p){
+  if(sim(withP(p,'ret',-99)).dead===null) return null;
+  var lo=-99, hi=p.ret; // dead at lo, alive at hi
+  for(var i=0;i<60;i++){var m=(lo+hi)/2; if(sim(withP(p,'ret',m)).dead===null)hi=m; else lo=m}
+  return hi;
+}
+if(typeof document==='undefined'){
+  var t={age:50,endAge:95,savings:2e6,spend:5e4,work:0,workUntil:50,ss:24000,ssAge:67,ret:0,crash:0,tax:0};
+  var s=sim(t); console.log('end',s.end,'dead',s.dead,'maxSpend',bisect(t,'spend',0,1e9,function(r){return r.dead===null}),'minRet',minReturn(withP(t,'ret',4)));
+}
+
+// ---------- UI ----------
+if(typeof document!=='undefined'){(function(){
+var DEF={age:50,endAge:95,savings:2000000,spend:50000,work:0,workUntil:50,ss:24000,ssAge:67,ret:4,crash:0,tax:15,extra:0,xFrom:35,xTo:55,lump:0,lumpAge:35};
+var GROUPS=[
+ ['You',[
+  ['age','Your age now',18,90,1],
+  ['endAge','Plan until age',60,110,1,'Pick an age you are unlikely to outlive.']]],
+ ['Money',[
+  ['savings','Savings and investments ($)',0,10000000,10000,'Everything invested, including retirement accounts. Leave out your home.'],
+  ['spend','Spending per year ($)',0,400000,1000]]],
+ ['Big costs (optional)',[
+  ['lump','One-time purchase ($)',0,1000000,5000,'A house down payment, for example. It leaves your savings in one go at the age below. The house is not counted as an asset afterwards, so this errs on the cautious side.'],
+  ['lumpAge','At age',18,110,1],
+  ['extra','Extra spending per year ($)',0,150000,1000,'One rough number for a stretch of costlier years: children, care, or a mortgage that costs more than your rent does now. Leave at 0 to skip.'],
+  ['xFrom','From age',18,105,1],
+  ['xTo','Until age',19,110,1]]],
+ ['Income',[
+  ['work','Take-home income per year ($)',0,400000,1000,'After tax, from work or rentals. Whatever is left after spending is treated as invested. Set to 0 to test quitting today.'],
+  ['workUntil','That income lasts until age',18,100,1],
+  ['ss','Social Security or pension per year ($)',0,100000,500,'After tax. Set to 0 to assume it never arrives.'],
+  ['ssAge','It starts at age',55,75,1]]],
+ ['Markets and tax',[
+  ['ret','Growth per year after inflation (%)',-5,10,0.5,'After inflation and fund fees. US stocks have averaged roughly 6 to 7 over the long run. A stock and bond mix, closer to 4. Tools that default to 7 usually have not removed inflation.'],
+  ['tax','Tax on money you withdraw (%)',0,50,1,'Each dollar you spend from savings costs more than a dollar when the account is taxed. 10 to 20 is a rough range for many retirees.'],
+  ['crash','Crash on day one (%)',0,90,5,'Your savings drop by this much today and the loss is never recovered.']]]
+];
+var KEYS=Object.keys(DEF), p={}, $=function(id){return document.getElementById(id)};
+function load(){var s=null;try{s=JSON.parse(localStorage.getItem('tgb'))}catch(e){} KEYS.forEach(function(k){p[k]=(s&&isFinite(s[k]))?+s[k]:DEF[k]})}
+function save(){try{localStorage.setItem('tgb',JSON.stringify(p))}catch(e){}}
+
+var html='';
+GROUPS.forEach(function(g){
+  html+='<div class="group"><div class="eyebrow">'+g[0]+'</div>';
+  g[1].forEach(function(f){
+    html+='<div class="field"><div class="top"><label for="n_'+f[0]+'">'+f[1]+'</label>'+
+      '<input type="number" id="n_'+f[0]+'" data-k="'+f[0]+'" step="'+f[4]+'" inputmode="decimal"></div>'+
+      '<input type="range" id="r_'+f[0]+'" data-k="'+f[0]+'" min="'+f[2]+'" max="'+f[3]+'" step="'+f[4]+'" aria-label="'+f[1]+'">'+
+      (f[5]?'<small>'+f[5]+'</small>':'')+'</div>';
+  });
+  html+='</div>';
+});
+$('fields').innerHTML=html;
+$('fields').style.cssText='display:flex;flex-direction:column;gap:14px';
+function fill(skip){KEYS.forEach(function(k){['n_','r_'].forEach(function(pre){var el=$(pre+k); if(el!==skip) el.value=p[k]})})}
+$('controls').addEventListener('input',function(e){
+  var k=e.target.dataset.k; if(!k) return;
+  var v=parseFloat(e.target.value); if(!isFinite(v)) return;
+  p[k]=v; fill(e.target); save(); render();
+});
+$('reset').addEventListener('click',function(){KEYS.forEach(function(k){p[k]=DEF[k]}); fill(); save(); render()});
+
+function money(n){return (n<0?'-':'')+'$'+Math.round(Math.abs(n)).toLocaleString('en-US')}
+function short(n){var a=Math.abs(n),s=n<0?'-':'';
+  if(a>=1e9)return s+'$'+(a/1e9).toFixed(a>=1e10?0:1)+'B';
+  if(a>=1e6)return s+'$'+(a/1e6).toFixed(a>=1e7?1:2)+'M';
+  if(a>=1e4)return s+'$'+Math.round(a/1e3)+'k';
+  return s+'$'+Math.round(a).toLocaleString('en-US')}
+function pct(n,d){return n.toFixed(d==null?1:d).replace(/\.0$/,'')+'%'}
+
+var SERIES=[
+ {id:'flat',label:'No growth, ever (0%)',color:'var(--flat)',dash:'7 6',w:2,ret:function(){return 0}},
+ {id:'you',label:'Your setting',color:'var(--accent)',dash:'',w:3.5,ret:function(){return p.ret}},
+ {id:'hist',label:'Long-run stock average (about 6.5%)',color:'var(--alt)',dash:'2 5',w:2.5,ret:function(){return 6.5}},
+ {id:'zero',label:'',color:'var(--warn)',dash:'12 4 2 4',w:2.5,ret:function(){return p.ret}}
+];
+var lastRuns=[];
+function render(){
+  var q={}; KEYS.forEach(function(k){q[k]=p[k]});
+  q.endAge=Math.max(q.endAge,q.age+1);
+  var n=q.endAge-q.age, base=sim(q), alive=function(r){return r.dead===null};
+  var maxSpend=bisect(q,'spend',0,1e9,alive);
+  var keepSpend=bisect(q,'spend',0,1e9,function(s){return s.dead===null&&s.end>=q.savings});
+  var incNow=(q.age<q.workUntil?q.work:0)+(q.age>=q.ssAge?q.ss:0);
+  var start=q.savings*(1-q.crash/100), xNow=(q.age>=q.xFrom&&q.age<q.xTo?q.extra:0), draw=(q.spend+xNow-incNow)/(q.spend+xNow>incNow?1-Math.min(q.tax,90)/100:1), wr=start>0?draw/start*100:Infinity;
+
+  // verdict
+  var v=$('verdict'), big=$('big'), note=$('vnote');
+  v.className='verdict';
+  if(base.dead!==null){
+    v.classList.add('bad');
+    big.textContent='At these settings the money runs out at age '+base.dead+'.';
+    note.textContent='That is '+(base.dead-q.age)+' years from now, with no changes made along the way. To last until '+q.endAge+', spending would need to be '+money(maxSpend)+' a year or less.';
+  } else if(base.end>=q.savings){
+    big.textContent='Your savings grow. At '+q.endAge+' you would have '+short(base.end)+', more than you have today.';
+    note.textContent='You could spend up to '+money(keepSpend)+' a year and still finish with as much as you started with.';
+  } else {
+    if(base.end<q.spend*5) v.classList.add('warn');
+    big.textContent='You make it to '+q.endAge+' with '+short(base.end)+' left.';
+    note.textContent='The balance drifts down over '+n+' years but never reaches zero. The most you could spend and still last is '+money(maxSpend)+' a year.';
+  }
+  var working=q.work>0&&q.workUntil>q.age&&q.workUntil<q.endAge;
+  var wrText=draw<=0?'0%':(isFinite(wr)?pct(wr):'n/a');
+  $('stats').innerHTML=
+    '<div class="stat"><b>'+wrText+'</b><span>of savings drawn this year'+(draw<=0?' (income covers spending)':'')+'</span></div>'+
+    '<div class="stat"><b>'+short(base.end)+'</b><span>left at age '+q.endAge+'</span></div>'+
+    '<div class="stat"><b>'+short(base.low)+'</b><span>lowest point along the way</span></div>'+
+    (working?'<div class="stat"><b>'+short(base.bal[q.workUntil-q.age])+'</b><span>at age '+q.workUntil+', when work income stops</span></div>':'');
+  if(working&&q.work>q.spend) note.textContent+=' This assumes you invest all '+money(q.work-q.spend)+' a year left over after spending, every year until '+q.workUntil+'. If you save less than that, raise the spending figure to match.';
+  if(n>45&&base.dead===null) note.textContent+=' The figure at '+q.endAge+' has '+n+' years of compounding in it, far longer than most calculators run.';
+  if(base.dead===null&&draw>0&&isFinite(wr)) note.textContent+=' The usual rule of thumb treats drawing 4% a year as reasonably safe for a 30-year retirement; you are at '+pct(wr)+'.';
+
+  // levers
+  $('leverTitle').textContent=base.dead===null?'What it would take to run out by '+q.endAge:'What would have to change';
+  var L=[];
+  if(base.dead===null){
+    var mult=q.spend>0?maxSpend/q.spend:null;
+    L.push(['Overspend',money(maxSpend)+' a year',
+      (mult?'That is '+mult.toFixed(1)+' times what you spend now':'You would have to spend this much')+', every single year for '+n+' years, without ever cutting back.']);
+    var cr=alive(sim(withP(q,'crash',99.99)))?null:bisect(q,'crash',q.crash,99.99,alive);
+    L.push(['Lose it in a crash',cr===null?'Not possible':pct(cr,0)+' gone',
+      cr===null?'Your income alone covers your spending, so even losing all your savings would not leave you short.'
+      :'Your savings would have to fall to '+short(q.savings*(1-cr/100))+' today, never recover the loss, and you would have to keep spending the same.'+(cr>57?' The 2008 crash took US stocks down about 57% at its worst, and they recovered.':'')]);
+    var mr=minReturn(q);
+    L.push(['Bad markets for life',mr===null?'Not possible':pct(mr)+' a year',
+      mr===null?'No level of investment loss empties the account, because your income covers your spending.'
+      :(mr<0?'Your investments would have to lose '+pct(-mr)+' of their buying power every year for '+n+' years straight.'
+        :(mr<0.05?'Your investments would have to earn nothing above inflation for '+n+' years straight.':'Your investments would have to average less than '+pct(mr)+' above inflation for '+n+' years. This one is within the range of a poor outcome, so it deserves a look.'))]);
+    var flat=sim(withP(q,'ret',0)), yrs=draw>0?start/draw:null;
+    L.push(['Stuff it in a mattress',flat.dead===null?'Still lasts':'Age '+flat.dead,
+      flat.dead===null?'With zero growth for the rest of your life, you would still have '+short(flat.end)+' at '+q.endAge+'.'
+      :'With zero growth at all, the money lasts until age '+flat.dead+', which is '+(flat.dead-q.age)+' years of spending with no help from the market.']);
+  } else {
+    L.push(['Spending that lasts',money(maxSpend)+' a year','That is '+money(q.spend-maxSpend)+' a year less than you entered, or '+money((q.spend-maxSpend)/12)+' a month.']);
+    var lo=q.savings, hi=q.savings*100+1e7;
+    for(var i=0;i<60;i++){var m=(lo+hi)/2; if(sim(withP(q,'savings',m)).dead===null)hi=m; else lo=m}
+    L.push(['Savings that last',short(hi),'With '+short(hi-q.savings)+' more saved, the same spending lasts until '+q.endAge+'.']);
+    L.push(['Years you have',(base.dead-q.age)+' years','The balance does not hit zero until age '+base.dead+'. That is a long time to notice and adjust.']);
+  }
+  $('levers').innerHTML=L.map(function(l){return '<div class="lever"><div class="what">'+l[0]+'</div><div class="num">'+l[1]+'</div><p>'+l[2]+'</p></div>'}).join('');
+
+  // oversaving signals
+  var over=base.dead===null&&maxSpend>q.spend*1.02, O=[];
+  G.zeroSpend=over?maxSpend:0;
+  if(over){
+    var zero=sim(withP(q,'spend',maxSpend)), pk=function(b){var m=0;for(var i=1;i<b.length;i++)if(b[i]>b[m])m=i;return m};
+    var pz=pk(zero.bal), pb=pk(base.bal), share=q.spend/maxSpend*100, gap=maxSpend-q.spend;
+    $('overSub').textContent='Running out is one way to get this wrong. Reaching '+q.endAge+' with a pile you never used is the other, and at these settings it is the one you are headed for.';
+    $('gauge').innerHTML='<div>You are spending <b>'+pct(share,0)+'</b> of what your money could support.</div><div class="track"><div class="fillbar" style="width:'+share.toFixed(1)+'%"></div></div>';
+    O.push(['Left unspent',short(base.end),'That is '+(q.spend>0?Math.round(base.end/q.spend)+' years of your current spending':'money')+' that you saved for and never used.']);
+    O.push(['To land on $0',money(maxSpend)+' a year','That is '+money(gap)+' more than now, or '+money(gap/12)+' more every month, starting today and for the rest of your life. Can you even think of what you would spend it on?']);
+    O.push(['When to start drawing down',pz===0?'Now':'Age '+(q.age+pz),
+      (pz===0?'On the spend-it-all path your savings fall from today.':'On the spend-it-all path your savings peak at '+(q.age+pz)+' and fall from there.')+' '+
+      (pb===n?'On your current path they never stop growing.':(pb===0?'On your current path they also fall from today, only too slowly.':'On your current path they peak at '+(q.age+pb)+' and barely fall.'))]);
+    if(working){
+      var lo2=q.age, hi2=q.workUntil; // alive at hi2
+      while(hi2>lo2&&sim(withP(q,'workUntil',hi2-1)).dead===null) hi2--;
+      if(hi2<q.workUntil) O.push(['Work you could skip',(q.workUntil-hi2)+' years','At your current spending you could stop work at '+(hi2<=q.age?'any time, including today':'age '+hi2)+' instead of '+q.workUntil+' and the money still lasts to '+q.endAge+'.']);
+    }
+  } else {
+    $('overSub').textContent=base.dead!==null?'Not a concern at these settings. This section matters once the money comfortably lasts.':'You are spending about as much as your money can support. There is no large pile being left behind at these settings.';
+    $('gauge').innerHTML='';
+  }
+  $('overBoxes').innerHTML=O.map(function(l){return '<div class="lever"><div class="what">'+l[0]+'</div><div class="num">'+l[1]+'</div><p>'+l[2]+'</p></div>'}).join('');
+  $('overBoxes').hidden=!over;
+
+  drawChart(q);
+}
+
+var G={l:58,r:18,t:14,b:34,W:720,H:360};
+function drawChart(q){
+  var act=SERIES.filter(function(s){return s.id!=='zero'||G.zeroSpend});
+  var runs=act.map(function(s){return sim(withP(withP(q,'ret',s.ret()),'spend',s.id==='zero'?G.zeroSpend:q.spend))}); lastRuns={runs:runs,q:q};
+  var n=q.endAge-q.age, max=1;
+  runs.forEach(function(r){r.bal.forEach(function(b){if(b>max)max=b})});
+  var mag=Math.pow(10,Math.floor(Math.log10(max))), step=[1,2,2.5,5,10].map(function(m){return m*mag/5}).filter(function(s){return max/s<=6})[0]||mag;
+  var top=Math.ceil(max/step)*step;
+  var x=function(i){return G.l+i/n*(G.W-G.l-G.r)}, y=function(v){return G.H-G.b-v/top*(G.H-G.t-G.b)};
+  G.x=x; G.n=n;
+  var s='';
+  for(var v=0;v<=top+1e-6;v+=step){
+    s+='<line x1="'+G.l+'" x2="'+(G.W-G.r)+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="var(--line)" stroke-width="'+(v===0?1.5:1)+'"/>'+
+       '<text x="'+(G.l-8)+'" y="'+(y(v)+4)+'" text-anchor="end" font-size="12" fill="var(--muted)">'+short(v)+'</text>';
+  }
+  var xs=n<=20?2:(n<=50?5:10);
+  for(var a=Math.ceil(q.age/xs)*xs;a<=q.endAge;a+=xs){
+    s+='<text x="'+x(a-q.age)+'" y="'+(G.H-G.b+18)+'" text-anchor="middle" font-size="12" fill="var(--muted)">'+a+'</text>';
+  }
+  s+='<text x="'+G.l+'" y="'+(G.H-2)+'" font-size="11" fill="var(--muted)">Age</text>';
+  // today's balance reference
+  s+='<line x1="'+G.l+'" x2="'+(G.W-G.r)+'" y1="'+y(q.savings)+'" y2="'+y(q.savings)+'" stroke="var(--muted)" stroke-width="1" stroke-dasharray="1 4"/>'+
+     '<text x="'+(G.W-G.r)+'" y="'+(y(q.savings)-5)+'" text-anchor="end" font-size="11" fill="var(--muted)">what you have today</text>';
+  [[q.work>0?q.workUntil:0,'work income stops'],[q.ss>0?q.ssAge:0,'pension starts'],[q.lump>0?q.lumpAge:0,'big purchase']].forEach(function(m,k){
+    if(m[0]<=q.age||m[0]>=q.endAge) return;
+    var mx=x(m[0]-q.age), right=mx>G.W*0.7;
+    s+='<line x1="'+mx+'" x2="'+mx+'" y1="'+G.t+'" y2="'+(G.H-G.b)+'" stroke="var(--muted)" stroke-width="1" stroke-dasharray="3 4"/>'+
+       '<text x="'+(mx+(right?-5:5))+'" y="'+(G.t+10+k*14)+'" text-anchor="'+(right?'end':'start')+'" font-size="11" fill="var(--muted)">'+m[1]+' ('+m[0]+')</text>';
+  });
+  if(q.extra>0){var xa=Math.max(q.xFrom,q.age), xb=Math.min(q.xTo,q.endAge);
+    if(xb>xa) s+='<rect x="'+x(xa-q.age)+'" y="'+G.t+'" width="'+(x(xb-q.age)-x(xa-q.age))+'" height="'+(G.H-G.b-G.t)+'" fill="var(--warn)" opacity="0.1"/>'+
+      '<text x="'+(x(xa-q.age)+5)+'" y="'+(G.H-G.b-8)+'" font-size="11" fill="var(--warn)">expensive years</text>';}
+  act.forEach(function(se,i){
+    var r=runs[i], d=r.bal.map(function(b,j){return (j?'L':'M')+x(j).toFixed(1)+' '+y(b).toFixed(1)}).join('');
+    s+='<path d="'+d+'" fill="none" stroke="'+se.color+'" stroke-width="'+se.w+'" stroke-dasharray="'+se.dash+'" stroke-linejoin="round" stroke-linecap="round"/>';
+    if(r.dead!==null) s+='<circle cx="'+x(r.dead-q.age)+'" cy="'+y(0)+'" r="5" fill="var(--bad)"/>';
+    else s+='<circle cx="'+x(n)+'" cy="'+y(r.end)+'" r="4" fill="'+se.color+'"/>';
+  });
+  s+='<line id="cursor" x1="0" x2="0" y1="'+G.t+'" y2="'+(G.H-G.b)+'" stroke="var(--ink)" stroke-width="1" visibility="hidden"/>';
+  $('chart').innerHTML=s;
+  $('legend').innerHTML=act.map(function(se,i){
+    var r=runs[i], tail=r.dead!==null?'runs out at '+r.dead:short(r.end)+' at '+q.endAge;
+    var lab=se.id==='you'?'Your setting ('+pct(q.ret)+')':(se.id==='zero'?'Spend it all ('+money(G.zeroSpend)+' a year)':se.label);
+    return '<span><svg viewBox="0 0 30 8"><line x1="1" x2="29" y1="4" y2="4" stroke="'+se.color+'" stroke-width="'+se.w+'" stroke-dasharray="'+se.dash+'" stroke-linecap="round" fill="none"/></svg>'+lab+': <b>'+tail+'</b></span>';
+  }).join('');
+}
+function hover(e){
+  var svg=$('chart'), rect=svg.getBoundingClientRect(), q=lastRuns.q; if(!q) return;
+  var px=(e.clientX-rect.left)/rect.width*G.W, i=Math.round((px-G.l)/(G.W-G.l-G.r)*G.n);
+  i=Math.max(0,Math.min(G.n,i));
+  var c=$('cursor'); if(c){c.setAttribute('x1',G.x(i));c.setAttribute('x2',G.x(i));c.setAttribute('visibility','visible')}
+  $('readout').textContent='Age '+(q.age+i)+':  no growth '+short(lastRuns.runs[0].bal[i])+'  ·  your setting '+short(lastRuns.runs[1].bal[i])+'  ·  stock average '+short(lastRuns.runs[2].bal[i]);
+}
+$('chart').addEventListener('pointermove',hover);
+$('chart').addEventListener('pointerdown',hover);
+
+load(); fill(); render();
+})();}
+</script>
+
+</body></html>
